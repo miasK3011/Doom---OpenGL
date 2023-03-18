@@ -6,10 +6,13 @@
 
 class Player{
     public:
-        float x = 0.0f, z = 5.0f;
-	    float lx = 0.0f, lz = -1.0f;
-	    float angulo = 0.0f;
+        float x, z;
+        float lx, lz;
+        float angulo;
 
+        Player() : x(0.0f), z(5.0f), lx(0.0f), lz(-1.0f), angulo(0.0f) {}
+        
+        // Função de movimentação do personagem
         void movement(int direction){
             switch (direction) {
                 case 0:
@@ -31,13 +34,6 @@ class Player{
 			        lz = -cos(angulo);
                     break;
             }
-        }
-
-        float pos(int coordenada){
-            if (coordenada == 1) {
-                return x;
-            }
-            return 0;
         }
 };
 

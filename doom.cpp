@@ -1,3 +1,4 @@
+#include <cstdlib>
 #ifdef __APPLE__
 #define GL_SILENCE_DEPRECATION
 #include <GLUT/glut.h>
@@ -139,5 +140,5 @@ int main(int argc, char **argv) {
 	glEnable(GL_DEPTH_TEST);
 	glutMainLoop();
 
-	return 1;
+	return EXIT_SUCCESS;
 }
