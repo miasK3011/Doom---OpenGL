@@ -7,8 +7,9 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <GL/glut.h>
-
 #endif
+
+#include <cstdio>
 
 #include "Assets/config.h"
 #include "Assets/player.h"
@@ -62,8 +63,18 @@ void drawParede(float posx, float posz, float w, float h){
 void renderScene(void) {
 
 	// Clear Color and Depth Buffers
-
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClearColor(6.0, 6.0, 6.0, 1.0);
+
+	GLfloat light_pos[] = {-2.0, 2.0, 2.0, 0.0};
+	GLfloat light_Ka[] = {0.4, 0.4, 0.4, 0.0};
+	GLfloat light_Kd[] = {1.0, 1.0, 1.0, 0.0};
+	GLfloat light_Ks[] = {1.0, 1.0, 1.0, 0.0};
+
+	glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
+	glLightfv(GL_LIGHT0, GL_AMBIENT, light_Ka);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_Kd);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, light_Ks);
 
 	// Reset transformations
 	glLoadIdentity();
@@ -114,6 +125,7 @@ void processSpecialKeys(int key, int xx, int yy) {
 			p.movement(down);			
 			break;
 	}
+	p.printPos();
 }
 
 void processNormalKeys(unsigned char key, int x, int y) {
@@ -149,6 +161,15 @@ int main(int argc, char **argv) {
 	glutSpecialFunc(processSpecialKeys);
 
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+	glEnable(GL_COLOR_MATERIAL);
+	glEnable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
+
+	glShadeModel(GL_SMOOTH);
+    glCullFace(GL_BACK);
+    glDepthFunc(GL_LESS);
 
 	glutMainLoop();
 
