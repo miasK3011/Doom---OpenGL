@@ -1,5 +1,6 @@
 #include "config.h"
 #include <cmath>
+#include <cstdio>
 
 #ifndef player_h
 #define player_h
@@ -34,6 +35,10 @@ class Player{
 			        lz = -cos(angulo);
                     break;
             }
+        }
+
+        void printPos(){
+            printf("x = %2f, z = %2f\n", x, z);
         }
 };
 
