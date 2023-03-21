@@ -1,4 +1,3 @@
-#include <cstdlib>
 #ifdef __APPLE__
 #define GL_SILENCE_DEPRECATION
 #include <GLUT/glut.h>
@@ -11,8 +10,8 @@
 
 #endif
 
-#include "config.h"
-#include "player.h"
+#include "Assets/config.h"
+#include "Assets/player.h"
 
 //Prototipagem das funções
 void drawSnowMan();
@@ -21,6 +20,7 @@ void processSpecialKeys(int key, int xx, int yy);
 void renderScene(void);
 void processNormalKeys(unsigned char key, int x, int y);
 void changeSize(int w, int h);
+void drawParede(float posx, float posz, float w, float h);
 
 //Declaração do objeto jogador
 Player p;
@@ -48,6 +48,17 @@ void drawSnowMan() {
 	glutSolidCone(0.08f,0.5f,10,2);
 }
 
+// Posx, Posz = Posição da parede.
+// w, h = altura e largura da parede.
+void drawParede(float posx, float posz, float w, float h){
+	glBegin(GL_QUADS);
+		glVertex3f(posx, h, posz);
+		glVertex3f(posx+w, h, posz);
+		glVertex3f(posx+w, 0, posz);
+		glVertex3f(posx, 0, posz);
+	glEnd();	
+}
+
 void renderScene(void) {
 
 	// Clear Color and Depth Buffers
@@ -72,7 +83,9 @@ void renderScene(void) {
 		glVertex3f( 100.0f, 0.0f, -100.0f);
 	glEnd();
 
-        // Draw 36 SnowMen
+	drawParede(-20.0f, -15.0f, 5.0f, 5.0f);
+
+	// Draw 36 SnowMen
 	for(int i = -3; i < 3; i++)
 		for(int j=-3; j < 3; j++) {
 			glPushMatrix();
@@ -85,11 +98,10 @@ void renderScene(void) {
 }
 
 void processSpecialKeys(int key, int xx, int yy) {
-
 	enum {up, down, left, right};
 
 	switch (key) {
-		case GLUT_KEY_LEFT :
+		case GLUT_KEY_LEFT:
 			p.movement(left);
 			break;
 		case GLUT_KEY_RIGHT :
@@ -105,7 +117,6 @@ void processSpecialKeys(int key, int xx, int yy) {
 }
 
 void processNormalKeys(unsigned char key, int x, int y) {
-
 	if (key == 27)
 		exit(0);
 }
@@ -118,17 +129,17 @@ void changeSize(int w, int h) {
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-
 	glViewport(0, 0, w, h);
 	gluPerspective(45,ratio,1,1000);
 	glMatrixMode(GL_MODELVIEW);
 }
 
 int main(int argc, char **argv) {
+
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
-	glutInitWindowPosition(100,100);
-	glutInitWindowSize(320,320);
+	glutInitWindowPosition((1336-JANELA_X)/2,(736-JANELA_Y)/2);
+	glutInitWindowSize(JANELA_X, JANELA_Y);
 	glutCreateWindow("Doom");
 
 	glutDisplayFunc(renderScene);
@@ -138,7 +149,8 @@ int main(int argc, char **argv) {
 	glutSpecialFunc(processSpecialKeys);
 
 	glEnable(GL_DEPTH_TEST);
+
 	glutMainLoop();
 
-	return EXIT_SUCCESS;
+	return 1;
 }
