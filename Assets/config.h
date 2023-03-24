@@ -12,5 +12,6 @@
 #define JANELA_Y 480
 #define VEL_MOV 0.6
 #define SENSE_CAM 0.06
+#define TAM_MAPA 10
 
 #endif
