@@ -1,3 +1,4 @@
+#include <GL/freeglut_std.h>
 #ifdef __APPLE__
 #define GL_SILENCE_DEPRECATION
 #include <GLUT/glut.h>
@@ -21,10 +22,44 @@ void processSpecialKeys(int key, int xx, int yy);
 void renderScene(void);
 void processNormalKeys(unsigned char key, int x, int y);
 void changeSize(int w, int h);
-void drawParede(float posx, float posz, float w, float h);
+void drawParede(float x, float y, float z, float width, float height, float depth);
+void drawCenario();
+void calcularNormaisVertices();
+void calcularNormaisFaces();
+void normalizar();
 
 //Declaração do objeto jogador
 Player p;
+
+int mapa[TAM_MAPA][TAM_MAPA] = {{1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+								{1, 0, 0, 0, 0, 0, 0, 0, 0, 1}, 
+								{1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+								{1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+								{1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+								{1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+								{1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+								{1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+								{1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+								{1, 1, 1, 1, 1, 1, 1, 1, 1, 1},};
+
+void drawCenario(){
+	float largura = 5, profundidade = 5;
+
+	for (int linha = 0; linha <= TAM_MAPA; linha++) {
+		for (int coluna = 0; coluna <= TAM_MAPA; coluna++) {
+			int x = largura * linha;
+			int z = profundidade * coluna;
+
+			if (mapa[linha][coluna] == 1) {
+				//drawParede(x, 0, z, largura, altura, profundidade);
+				glPushMatrix();
+					glTranslatef(x, 0, z);
+					glutSolidCube(5);
+				glPopMatrix();
+			}
+		}
+	}
+}
 
 void drawSnowMan() {
 	glColor3f(1.0f, 1.0f, 1.0f);
@@ -51,20 +86,55 @@ void drawSnowMan() {
 
 // Posx, Posz = Posição da parede.
 // w, h = altura e largura da parede.
-void drawParede(float posx, float posz, float w, float h){
-	glBegin(GL_QUADS);
-		glVertex3f(posx, h, posz);
-		glVertex3f(posx+w, h, posz);
-		glVertex3f(posx+w, 0, posz);
-		glVertex3f(posx, 0, posz);
-	glEnd();	
+void drawParede(float x, float y, float z, float width, float height, float depth) {
+    // Definir a cor do paralelepípedo
+    glColor3f(1.0f, 1.0f, 1.0f);
+
+    // Desenhar as faces do paralelepípedo usando GL_QUADS
+    glBegin(GL_QUADS);
+        // Face frontal
+        glVertex3f(x, y, z);
+        glVertex3f(x + width, y, z);
+        glVertex3f(x + width, y + height, z);
+        glVertex3f(x, y + height, z);
+
+        // Face traseira
+        glVertex3f(x, y, z + depth);
+        glVertex3f(x + width, y, z + depth);
+        glVertex3f(x + width, y + height, z + depth);
+        glVertex3f(x, y + height, z + depth);
+
+        // Face superior
+        glVertex3f(x, y + height, z);
+        glVertex3f(x + width, y + height, z);
+        glVertex3f(x + width, y + height, z + depth);
+        glVertex3f(x, y + height, z + depth);
+
+        // Face inferior
+        glVertex3f(x, y, z);
+        glVertex3f(x + width, y, z);
+        glVertex3f(x + width, y, z + depth);
+        glVertex3f(x, y, z + depth);
+
+        // Face lateral esquerda
+        glVertex3f(x, y, z);
+        glVertex3f(x, y + height, z);
+        glVertex3f(x, y + height, z + depth);
+        glVertex3f(x, y, z + depth);
+
+        // Face lateral direita
+        glVertex3f(x + width, y, z);
+        glVertex3f(x + width, y + height, z);
+        glVertex3f(x + width, y + height, z + depth);
+        glVertex3f(x + width, y, z + depth);
+    glEnd();
 }
 
 void renderScene(void) {
 
 	// Clear Color and Depth Buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glClearColor(6.0, 6.0, 6.0, 1.0);
+	glClearColor(0, 0, 0, 1);
 
 	GLfloat light_pos[] = {-2.0, 2.0, 2.0, 0.0};
 	GLfloat light_Ka[] = {0.4, 0.4, 0.4, 0.0};
@@ -73,8 +143,8 @@ void renderScene(void) {
 
 	glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, light_Ka);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_Kd);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, light_Ks);
+   	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_Kd);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, light_Ks);
 
 	// Reset transformations
 	glLoadIdentity();
@@ -94,7 +164,11 @@ void renderScene(void) {
 		glVertex3f( 100.0f, 0.0f, -100.0f);
 	glEnd();
 
-	drawParede(-20.0f, -15.0f, 5.0f, 5.0f);
+	glPushMatrix();
+		glColor3f(1.0f, 0, 0);
+//	drawParede(-20.0f, 0.0f, -15.0f, 5.0f, 5.0f, 3.0f);
+		drawCenario();
+	glPopMatrix();
 
 	// Draw 36 SnowMen
 	for(int i = -3; i < 3; i++)
@@ -168,7 +242,7 @@ int main(int argc, char **argv) {
 	glEnable(GL_DEPTH_TEST);
 
 	glShadeModel(GL_SMOOTH);
-    glCullFace(GL_BACK);
+    //glCullFace(GL_BACK);
     glDepthFunc(GL_LESS);
 
 	glutMainLoop();
