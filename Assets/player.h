@@ -11,7 +11,7 @@ class Player{
         float lx, lz;
         float angulo;
 
-        Player() : x(0.0f), z(5.0f), lx(0.0f), lz(-1.0f), angulo(0.0f) {}
+        Player() : x(20.0f), z(10.0f), lx(0.0f), lz(-1.0f), angulo(0.0f) {}
         
         // Função de movimentação do personagem
         void movement(int direction){
