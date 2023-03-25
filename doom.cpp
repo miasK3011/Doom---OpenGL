@@ -1,4 +1,3 @@
-#include <cstdlib>
 #ifdef __APPLE__
 #define GL_SILENCE_DEPRECATION
 #include <GLUT/glut.h>
@@ -11,10 +10,12 @@
 #endif
 
 #include <cstdio>
+#include <cstdlib>
+#include <stdio.h>
 
 #include "Assets/config.h"
 #include "Assets/player.h"
-#include "Assets/Texturas/StoneWall_TXR.h"
+#include "Assets/Texturas/tijolos.h"
 
 //Prototipagem das funções
 void drawSnowMan();
@@ -22,11 +23,11 @@ int main(int argc, char **argv);
 void processSpecialKeys(int key, int xx, int yy);
 void renderScene(void);
 void processNormalKeys(unsigned char key, int x, int y);
+void drawCube(float size, GLuint texture);
 void changeSize(int w, int h);
-void drawWall(float x, float y, float z, float width, float height, float depth);
 void drawScene();
 
-void drawCube(float size, GLuint frontTex) {
+void drawCube(float size, GLuint texture) {
     // metade do tamanho
     float hs = size * 0.5f;
 
@@ -34,7 +35,7 @@ void drawCube(float size, GLuint frontTex) {
     glEnable(GL_TEXTURE_2D);
 
     // define as texturas para cada face do cubo
-	glBindTexture(GL_TEXTURE_2D, frontTex);
+	glBindTexture(GL_TEXTURE_2D, texture);
     glBegin(GL_QUADS);
     glTexCoord2f(0.0, 0.0); glVertex3f(-hs, -hs,  hs);
     glTexCoord2f(1.0, 0.0); glVertex3f( hs, -hs,  hs);
@@ -42,7 +43,7 @@ void drawCube(float size, GLuint frontTex) {
     glTexCoord2f(0.0, 1.0); glVertex3f(-hs,  hs,  hs);
     glEnd();
 
-	glBindTexture(GL_TEXTURE_2D, frontTex);
+	glBindTexture(GL_TEXTURE_2D, texture);
     glBegin(GL_QUADS);
     glTexCoord2f(0.0, 0.0); glVertex3f( hs, -hs, -hs);
     glTexCoord2f(1.0, 0.0); glVertex3f(-hs, -hs, -hs);
@@ -50,23 +51,24 @@ void drawCube(float size, GLuint frontTex) {
     glTexCoord2f(0.0, 1.0); glVertex3f( hs,  hs, -hs);
     glEnd();
 
-	glBindTexture(GL_TEXTURE_2D, frontTex);
-    glBegin(GL_QUADS);
-    glTexCoord2f(0.0, 0.0); glVertex3f(-hs, -hs, -hs);
-    glTexCoord2f(1.0, 0.0); glVertex3f(-hs, -hs,  hs);
-    glTexCoord2f(1.0, 1.0); glVertex3f(-hs,  hs,  hs);
-    glTexCoord2f(0.0, 1.0); glVertex3f(-hs,  hs, -hs);
-    glEnd();
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glBegin(GL_QUADS);
+	glTexCoord2f(0.0, 0.0); glVertex3f(-hs, -hs, -hs);
+	glTexCoord2f(1.0, 0.0); glVertex3f(-hs, -hs,  hs);
+	glTexCoord2f(1.0, 1.0); glVertex3f(-hs,  hs,  hs);
+	glTexCoord2f(0.0, 1.0); glVertex3f(-hs,  hs, -hs);
+	glEnd();
 
-	glBindTexture(GL_TEXTURE_2D, frontTex);
-    glBegin(GL_QUADS);
-    glTexCoord2f(0.0, 0.0); glVertex3f( hs, -hs,  hs);
-    glTexCoord2f(1.0, 0.0); glVertex3f( hs, -hs, -hs);
-    glTexCoord2f(1.0, 1.0); glVertex3f( hs,  hs, -hs);
-    glTexCoord2f(0.0, 1.0); glVertex3f( hs,  hs,  hs);
-    glEnd();
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glBegin(GL_QUADS);
+	glTexCoord2f(0.0, 0.0); glVertex3f( hs, -hs,  hs);
+	glTexCoord2f(1.0, 0.0); glVertex3f( hs, -hs, -hs);
+	glTexCoord2f(1.0, 1.0); glVertex3f( hs,  hs, -hs);
+	glTexCoord2f(0.0, 1.0); glVertex3f( hs,  hs,  hs);
+	glEnd();
 
-	glBindTexture(GL_TEXTURE_2D, frontTex);
+
+	glBindTexture(GL_TEXTURE_2D, texture);
     glBegin(GL_QUADS);
     glTexCoord2f(0.0, 0.0); glVertex3f(-hs,  hs, -hs);
     glTexCoord2f(1.0, 0.0); glVertex3f(-hs,  hs,  hs);
@@ -74,7 +76,7 @@ void drawCube(float size, GLuint frontTex) {
     glTexCoord2f(0.0, 1.0); glVertex3f( hs,  hs, -hs);
     glEnd();
 
-	glBindTexture(GL_TEXTURE_2D, frontTex);
+	glBindTexture(GL_TEXTURE_2D, texture);
 	glBegin(GL_QUADS);
     glTexCoord2f(0.0, 0.0); glVertex3f(-hs,  hs, -hs);
     glTexCoord2f(1.0, 0.0); glVertex3f(-hs,  hs,  hs);
@@ -82,6 +84,7 @@ void drawCube(float size, GLuint frontTex) {
     glTexCoord2f(0.0, 1.0); glVertex3f( hs,  hs, -hs);
     glEnd();
 
+	glDisable(GL_TEXTURE_2D);
 }
 
 //Declaração do objeto jogador
@@ -97,24 +100,23 @@ int map[TAM_MAP][TAM_MAP] = {{1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 							 {1, 0, 0, 0, 0, 0, 0, 1, 0, 1},
 							 {1, 0, 0, 0, 0, 0, 0, 1, 0, 1},
 							 {1, 0, 0, 0, 0, 0, 0, 1, 0, 1},
-							 {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},};
+							 {1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
+							 };
 
 void drawScene(){
-	float width = 5, depth = 5;
-	GLuint i = 5;
-
+	float tam_cube = 7;
+	float width = tam_cube, depth = tam_cube;
+	
 	for (int row = 0; row <= TAM_MAP; row++) {
 		for (int column = 0; column <= TAM_MAP; column++) {
 			int x = width * row;
 			int z = depth * column;
 
 			if (map[row][column] == 1) {
-				//drawParede(x, 0, z, largura, altura, profundidade);
 				glPushMatrix();
 					glTranslatef(x, 0, z);
 					glColor3f(1, 1, 1);
-					drawCube(5, id_textures[0]);
-					//glutSolidCube(5);
+					drawCube(tam_cube, id_textures[0]);
 				glPopMatrix();
 			}
 		}
@@ -249,25 +251,17 @@ int main(int argc, char **argv) {
     glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, material_Ke);
     glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, material_Se);
 
-	unsigned char* textureData = new unsigned char[width * height * 3];
-	for (int i = 0; i < width * height; i++) {
-		textureData[i * 3] = header_data[i * 4];
-		textureData[i * 3 + 1] = header_data[i * 4 + 1];
-		textureData[i * 3 + 2] = header_data[i * 4 + 2];
-	}
-
 	glGenTextures(QUANT_TEX, id_textures);
 	glBindTexture(GL_TEXTURE_2D, id_textures[0]);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, textureData);
-	delete [] textureData;
-	
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, TEXTURE_WIDTH, TEXTURE_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, texture_data);
+
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
-
+	
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_LIGHTING);
