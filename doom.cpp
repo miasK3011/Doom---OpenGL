@@ -150,7 +150,7 @@ void renderScene(void) {
 
 	// Clear Color and Depth Buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glClearColor(0, 0, 0, 1);
+	glClearColor(0, 0, 0.5, 1);
 
 	// Reset transformations
 	glLoadIdentity();
@@ -170,10 +170,8 @@ void renderScene(void) {
 		glVertex3f( 100.0f, 0.0f, -100.0f);
 	glEnd();
 
-	glPushMatrix();
-		glColor3f(1.0f, 0, 0);
-		drawScene();
-	glPopMatrix();
+
+	drawScene();
 
 	// Draw 36 SnowMen
 	for(int i = -3; i < 3; i++)
