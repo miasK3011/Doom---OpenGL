@@ -15,7 +15,7 @@
 #define VEL_MOV 1
 #define SENSE_CAM 0.08
 #define TAM_MAP 10
-#define QUANT_TEX 1
+#define QUANT_TEX 2
 
 static GLfloat light_pos[] = {-2.0, 2.0, 2.0, 0.0};
 static GLfloat light_Ka[] = {0.4, 0.4, 0.4, 0.0};
