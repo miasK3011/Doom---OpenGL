@@ -1,6 +1,7 @@
 #include "config.h"
 #include <cmath>
 #include <cstdio>
+#include <vector>
 
 #ifndef player_h
 #define player_h

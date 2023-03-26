@@ -15,7 +15,12 @@
 
 #include "Assets/config.h"
 #include "Assets/player.h"
+#include "Assets/wall.h"
 #include "Assets/Texturas/tijolos.h"
+
+//Declaração do objeto jogador
+Player p;
+unsigned int id_textures[QUANT_TEX];
 
 //Prototipagem das funções
 void drawSnowMan();
@@ -23,73 +28,8 @@ int main(int argc, char **argv);
 void processSpecialKeys(int key, int xx, int yy);
 void renderScene(void);
 void processNormalKeys(unsigned char key, int x, int y);
-void drawCube(float size, GLuint texture);
 void changeSize(int w, int h);
 void drawScene();
-
-void drawCube(float size, GLuint texture) {
-    // metade do tamanho
-    float hs = size * 0.5f;
-
-    // habilita texturas
-    glEnable(GL_TEXTURE_2D);
-
-    // define as texturas para cada face do cubo
-	glBindTexture(GL_TEXTURE_2D, texture);
-    glBegin(GL_QUADS);
-    glTexCoord2f(0.0, 0.0); glVertex3f(-hs, -hs,  hs);
-    glTexCoord2f(1.0, 0.0); glVertex3f( hs, -hs,  hs);
-    glTexCoord2f(1.0, 1.0); glVertex3f( hs,  hs,  hs);
-    glTexCoord2f(0.0, 1.0); glVertex3f(-hs,  hs,  hs);
-    glEnd();
-
-	glBindTexture(GL_TEXTURE_2D, texture);
-    glBegin(GL_QUADS);
-    glTexCoord2f(0.0, 0.0); glVertex3f( hs, -hs, -hs);
-    glTexCoord2f(1.0, 0.0); glVertex3f(-hs, -hs, -hs);
-    glTexCoord2f(1.0, 1.0); glVertex3f(-hs,  hs, -hs);
-    glTexCoord2f(0.0, 1.0); glVertex3f( hs,  hs, -hs);
-    glEnd();
-
-	glBindTexture(GL_TEXTURE_2D, texture);
-	glBegin(GL_QUADS);
-	glTexCoord2f(0.0, 0.0); glVertex3f(-hs, -hs, -hs);
-	glTexCoord2f(1.0, 0.0); glVertex3f(-hs, -hs,  hs);
-	glTexCoord2f(1.0, 1.0); glVertex3f(-hs,  hs,  hs);
-	glTexCoord2f(0.0, 1.0); glVertex3f(-hs,  hs, -hs);
-	glEnd();
-
-	glBindTexture(GL_TEXTURE_2D, texture);
-	glBegin(GL_QUADS);
-	glTexCoord2f(0.0, 0.0); glVertex3f( hs, -hs,  hs);
-	glTexCoord2f(1.0, 0.0); glVertex3f( hs, -hs, -hs);
-	glTexCoord2f(1.0, 1.0); glVertex3f( hs,  hs, -hs);
-	glTexCoord2f(0.0, 1.0); glVertex3f( hs,  hs,  hs);
-	glEnd();
-
-
-	glBindTexture(GL_TEXTURE_2D, texture);
-    glBegin(GL_QUADS);
-    glTexCoord2f(0.0, 0.0); glVertex3f(-hs,  hs, -hs);
-    glTexCoord2f(1.0, 0.0); glVertex3f(-hs,  hs,  hs);
-    glTexCoord2f(1.0, 1.0); glVertex3f( hs,  hs,  hs);
-    glTexCoord2f(0.0, 1.0); glVertex3f( hs,  hs, -hs);
-    glEnd();
-
-	glBindTexture(GL_TEXTURE_2D, texture);
-	glBegin(GL_QUADS);
-    glTexCoord2f(0.0, 0.0); glVertex3f(-hs,  hs, -hs);
-    glTexCoord2f(1.0, 0.0); glVertex3f(-hs,  hs,  hs);
-    glTexCoord2f(1.0, 1.0); glVertex3f( hs,  hs,  hs);
-    glTexCoord2f(0.0, 1.0); glVertex3f( hs,  hs, -hs);
-    glEnd();
-
-	glDisable(GL_TEXTURE_2D);
-}
-
-//Declaração do objeto jogador
-Player p;
-unsigned int id_textures[QUANT_TEX];
 
 int map[TAM_MAP][TAM_MAP] = {{1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 							 {1, 0, 0, 0, 0, 1, 0, 0, 0, 1}, 
@@ -106,18 +46,15 @@ int map[TAM_MAP][TAM_MAP] = {{1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 void drawScene(){
 	float tam_cube = 7;
 	float width = tam_cube, depth = tam_cube;
-	
+
 	for (int row = 0; row <= TAM_MAP; row++) {
 		for (int column = 0; column <= TAM_MAP; column++) {
 			int x = width * row;
 			int z = depth * column;
 
-			if (map[row][column] == 1) {
-				glPushMatrix();
-					glTranslatef(x, 0, z);
-					glColor3f(1, 1, 1);
-					drawCube(tam_cube, id_textures[0]);
-				glPopMatrix();
+			if (map[row][column] == 1) {					
+				Wall w(x, z, tam_cube, id_textures[0]);
+				w.render();
 			}
 		}
 	}

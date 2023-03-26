@@ -5,7 +5,17 @@
     TAM_MAP = Tamanho do mapa
 
 */
+
+#ifdef __APPLE__
+#define GL_SILENCE_DEPRECATION
+#include <GLUT/glut.h>
+#include <OpenGL/gl.h>
+#include <OpenGL/glu.h>
+#else
 #include <GL/gl.h>
+#include <GL/glu.h>
+#include <GL/glut.h>
+#endif
 
 #ifndef config_h
 #define config_h
