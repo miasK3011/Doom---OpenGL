@@ -1,3 +1,4 @@
+#include <cstdio>
 #ifdef __APPLE__
 #define GL_SILENCE_DEPRECATION
 #include <GLUT/glut.h>
@@ -20,7 +21,7 @@ Wall::Wall(float x, float z, float size, GLuint texture) {
 
 void Wall::render(void) {
     glPushMatrix();
-    glTranslatef(m_x, 0, m_z);
+    glTranslatef(m_x, m_size/2, m_z);
     // metade do tamanho
     float hs = m_size * 0.5f;
 
@@ -80,4 +81,16 @@ void Wall::render(void) {
 	glDisable(GL_TEXTURE_2D);
 
     glPopMatrix();
+}
+
+float Wall::getSize(){
+    return m_size;
+}
+
+float Wall::getX(){
+    return m_x;
+}
+
+float Wall::getZ(){
+    return m_z;
 }
