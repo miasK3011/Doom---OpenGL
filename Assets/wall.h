@@ -16,9 +16,11 @@ class Wall {
     public:
         Wall(float x, float z, float size, GLuint texture);
         void render(void);
-        bool checkCollision(float x, float y, float z, float width, float height);
+        float getSize();
+        float getX();
+        float getZ();
     private:
-        float m_x, m_y, m_z;
+        float m_x, m_z;
         float m_size;
         GLuint m_texture;
 };
