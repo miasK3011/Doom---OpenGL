@@ -10,8 +10,10 @@
 #endif
 
 #include <cstdio>
+#include <cmath>
 #include <cstdlib>
 #include <stdio.h>
+#include <forward_list>
 
 #include "Assets/config.h"
 #include "Assets/player.h"
@@ -19,7 +21,10 @@
 #include "Assets/Texturas/tijolos.h"
 
 //Declaração do objeto jogador
-Player p;
+Player p(PLAYER_X, PLAYER_Z, PLAYER_LX, PLAYER_LZ, PLAYER_ANGLE);
+//Lista de paredes
+std::forward_list<Wall> walls;
+//Matriz de id das texturas
 unsigned int id_textures[QUANT_TEX];
 
 //Prototipagem das funções
@@ -27,24 +32,53 @@ void drawSnowMan();
 int main(int argc, char **argv);
 void processSpecialKeys(int key, int xx, int yy);
 void renderScene(void);
+void renderWalls(void);
 void processNormalKeys(unsigned char key, int x, int y);
 void changeSize(int w, int h);
 void drawScene();
+void createMap();
+bool resolveCollison(Player& player, Wall& wall);
+bool checkCollision();
 
-int map[TAM_MAP][TAM_MAP] = {{1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-							 {1, 0, 0, 0, 0, 1, 0, 0, 0, 1}, 
-							 {1, 0, 0, 0, 0, 1, 0, 0, 0, 1},
-							 {1, 0, 1, 1, 1, 1, 0, 0, 0, 1},
-							 {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-							 {1, 1, 1, 1, 1, 0, 1, 1, 0, 1},
-							 {1, 0, 0, 0, 0, 0, 0, 1, 0, 1},
-							 {1, 0, 0, 0, 0, 0, 0, 1, 0, 1},
-							 {1, 0, 0, 0, 0, 0, 0, 1, 0, 1},
-							 {1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
-							 };
+void renderWalls(){
+	for (std::forward_list<Wall>::iterator it = walls.begin(); it != walls.end(); it++) {
+		it->render();
+	}
+}
 
+//Checa colisão e evita que o jogador fique preso dentro da parede.
+bool checkCollision(){
+	float player_radius = 1.5f;
+	float min_distance = 0.1f; // valor mínimo de distância entre o jogador e a parede
+	
+	for (std::forward_list<Wall>::iterator it = walls.begin(); it != walls.end(); it++) {
+		float wall_radius = it->getSize() / 2.0f;
+		float dist = sqrt(pow(p.posx() - it->getX(), 2) + pow(p.posz() - it->getZ(), 2));
+		
+		if (dist <= player_radius + wall_radius - min_distance) {
+			float dx = p.posx() - it->getX();
+			float dz = p.posz() - it->getZ();
+			float len = sqrt(dx * dx + dz * dz);
+			
+			dx /= len;
+			dz /= len;
+			
+			float separation = player_radius + wall_radius - dist + min_distance;
+			
+			dx *= separation;
+			dz *= separation;
+
+			p.setx(p.posx() + dx);
+			p.setz(p.posz() + dz);
+			return true;
+		}
+	}
+	return false;
+}
+
+//Utiliza a matriz map para desenhar o mapa.
 void drawScene(){
-	float tam_cube = 7;
+	float tam_cube = 6;
 	float width = tam_cube, depth = tam_cube;
 
 	for (int row = 0; row <= TAM_MAP; row++) {
@@ -54,7 +88,7 @@ void drawScene(){
 
 			if (map[row][column] == 1) {					
 				Wall w(x, z, tam_cube, id_textures[0]);
-				w.render();
+				walls.push_front(w);
 			}
 		}
 	}
@@ -92,12 +126,9 @@ void renderScene(void) {
 	// Reset transformations
 	glLoadIdentity();
 	// Set the camera
-	gluLookAt(	p.x, 1.0f, p.z,
-			p.x+p.lx, 1.0f,  p.z+p.lz,
+	gluLookAt(	p.posx(), 1.0f, p.posz(),
+			p.posx()+p.poslx(), 1.0f,  p.posz()+p.poslz(),
 			0.0f, 1.0f,  0.0f);
-
-        // Draw ground
-	
 	
 	glColor3f(0.0f, 0.9f, 0.0f);
 	glBegin(GL_QUADS);
@@ -107,11 +138,10 @@ void renderScene(void) {
 		glVertex3f( 100.0f, 0.0f, -100.0f);
 	glEnd();
 
-
-	drawScene();
-
+	renderWalls();
+	
 	// Draw 36 SnowMen
-	for(int i = -3; i < 3; i++)
+	for(int i = -3; i < 3; i++){
 		for(int j=-3; j < 3; j++) {
 			glPushMatrix();
 			glTranslatef(i*10.0,0,j * 10.0);
@@ -119,13 +149,12 @@ void renderScene(void) {
 			glDisable(GL_TEXTURE_2D);
 			glPopMatrix();
 		}
-
+	}
 	glutSwapBuffers();
 }
 
 void processSpecialKeys(int key, int xx, int yy) {
 	enum {up, down, left, right};
-
 	switch (key) {
 		case GLUT_KEY_LEFT:
 			p.movement(left);
@@ -133,14 +162,20 @@ void processSpecialKeys(int key, int xx, int yy) {
 		case GLUT_KEY_RIGHT :
 			p.movement(right);
 			break;
-		case GLUT_KEY_UP :
-			p.movement(up);
+		case GLUT_KEY_UP:
+			if (!checkCollision()) {
+				p.movement(up);
+			}
+			p.printPos();
 			break;
 		case GLUT_KEY_DOWN :
-			p.movement(down);			
-			break;
+			if (!checkCollision()){
+				p.movement(down);
+			}
+			p.printPos();			
+			break;				
 	}
-	p.printPos();
+	
 }
 
 void processNormalKeys(unsigned char key, int x, int y) {
@@ -208,7 +243,9 @@ int main(int argc, char **argv) {
 	glShadeModel(GL_SMOOTH);
     glCullFace(GL_BACK);
     glDepthFunc(GL_LESS);
+	
 
+	drawScene();
 	glutMainLoop();
 
 	return EXIT_SUCCESS;
