@@ -14,11 +14,12 @@
 #include "config.h"
 
 
-Floor::Floor(float x, float y, float z, float tam){
+Floor::Floor(float x, float y, float z, float tam, GLint texture){
     m_x = x;
     m_y = y;
     m_z = z;
     m_tam = tam;
+	m_tex = texture;
 }
 
 void Floor::normalize(GLfloat (*vertices)[3], int num_vertices) {
@@ -50,37 +51,22 @@ void Floor::normalize(GLfloat (*vertices)[3], int num_vertices) {
 void Floor::render(){
     float hs = m_tam/2;
 
-	floorNormals[0][0] = -hs;
-	floorNormals[0][1] = 0;
-	floorNormals[0][2] = -hs;
-
-	floorNormals[1][0] = -hs;
-	floorNormals[1][1] = 0;
-	floorNormals[1][2] = hs;
-	
-	floorNormals[2][0] = hs;
-	floorNormals[2][1] = 0;
-	floorNormals[2][2] = hs;
-
-	floorNormals[3][0] = hs;
-	floorNormals[3][1] = 0;
-	floorNormals[3][2] = -hs;
-
-	normalize(floorNormals, 4);
-
 	glPushMatrix();
 	glTranslatef(m_x, m_y, m_z);
-	glColor3f(0, 0.6, 0);
+	glColor3f(0.0f, 0.5f, 0.0f);
+
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, m_tex);
 	glBegin(GL_QUADS);
-		glNormal3f(floorNormals[0][0], floorNormals[0][1] , floorNormals[0][2]);
-		glVertex3f(-hs, 0, -hs);
-		glNormal3f(floorNormals[1][0], floorNormals[1][1] , floorNormals[1][2]);
-		glVertex3f(-hs, 0,  hs);
-		glNormal3f(floorNormals[2][0], floorNormals[2][1] , floorNormals[2][2]);
-		glVertex3f( hs, 0,  hs);
-		glNormal3f(floorNormals[3][0], floorNormals[3][1] , floorNormals[3][2]);
-		glVertex3f( hs, 0, -hs);
+		glNormal3f(0, 1, 0);
+		glTexCoord2f(0.0, 0.0);glVertex3f(-hs, 0, -hs);		
+		glTexCoord2f(1.0, 0.0);glVertex3f(-hs, 0,  hs);
+		glTexCoord2f(1.0, 1.0);glVertex3f(hs, 0,  hs);
+		glTexCoord2f(0.0, 1.0);glVertex3f(hs, 0,  -hs);
 	glEnd();
+
+	glDisable(GL_TEXTURE_2D);
+
 	glPopMatrix();
 
 }
