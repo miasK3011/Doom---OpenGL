@@ -15,15 +15,20 @@
 #include <stdio.h>
 #include <forward_list>
 
+#include "Assets/wall.h"
+#include "Assets/floor.h"
 #include "Assets/config.h"
 #include "Assets/player.h"
-#include "Assets/wall.h"
-#include "Assets/Texturas/tijolos.h"
+#include "Assets/glut_text.h"
+#include "Assets/Texturas/wallGrime.h"
+#include "Assets/Texturas/grass.h"
 
 //Declaração do objeto jogador
 Player p(PLAYER_X, PLAYER_Z, PLAYER_LX, PLAYER_LZ, PLAYER_ANGLE);
 //Lista de paredes
 std::forward_list<Wall> walls;
+std::forward_list<Floor> floors;
+
 //Matriz de id das texturas
 unsigned int id_textures[QUANT_TEX];
 
@@ -33,12 +38,35 @@ int main(int argc, char **argv);
 void processSpecialKeys(int key, int xx, int yy);
 void renderScene(void);
 void renderWalls(void);
+void renderFloors(void);
 void processNormalKeys(unsigned char key, int x, int y);
 void changeSize(int w, int h);
 void drawScene();
-void createMap();
-bool resolveCollison(Player& player, Wall& wall);
+void drawFloor(float x, float y, float z, float tam);
 bool checkCollision();
+
+//Utiliza a matriz map para desenhar o mapa.
+void drawScene(){
+	float size = 6;
+	float width = size, depth = size;
+
+	for (int row = 0; row <= TAM_MAP; row++) {
+		for (int column = 0; column <= TAM_MAP; column++) {
+			int x = width * row;
+			int z = depth * column;
+
+			if (map[row][column] == 0){
+				Floor f(x, 0, z, size);
+				floors.push_front(f);
+			}
+			if (map[row][column] == 1) {					
+				Wall w(x, z, size, id_textures[0]);
+				walls.push_front(w);
+			}
+
+		}
+	}
+}
 
 void renderWalls(){
 	for (std::forward_list<Wall>::iterator it = walls.begin(); it != walls.end(); it++) {
@@ -46,9 +74,15 @@ void renderWalls(){
 	}
 }
 
+void renderFloors(){
+	for (std::forward_list<Floor>::iterator it = floors.begin(); it != floors.end(); it++) {
+		it->render();
+	}
+}
+
 //Checa colisão e evita que o jogador fique preso dentro da parede.
 bool checkCollision(){
-	float player_radius = 1.5f;
+	float player_radius = 2.0f;
 	float min_distance = 0.1f; // valor mínimo de distância entre o jogador e a parede
 	
 	for (std::forward_list<Wall>::iterator it = walls.begin(); it != walls.end(); it++) {
@@ -76,23 +110,6 @@ bool checkCollision(){
 	return false;
 }
 
-//Utiliza a matriz map para desenhar o mapa.
-void drawScene(){
-	float tam_cube = 6;
-	float width = tam_cube, depth = tam_cube;
-
-	for (int row = 0; row <= TAM_MAP; row++) {
-		for (int column = 0; column <= TAM_MAP; column++) {
-			int x = width * row;
-			int z = depth * column;
-
-			if (map[row][column] == 1) {					
-				Wall w(x, z, tam_cube, id_textures[0]);
-				walls.push_front(w);
-			}
-		}
-	}
-}
 
 void drawSnowMan() {
 	glColor3f(1.0f, 1.0f, 1.0f);
@@ -122,24 +139,21 @@ void renderScene(void) {
 	// Clear Color and Depth Buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glClearColor(0, 0, 0.5, 1);
+	glColor3f(0.0f, 0.0f, 0.0f);
 
 	// Reset transformations
 	glLoadIdentity();
 	// Set the camera
-	gluLookAt(	p.posx(), 1.0f, p.posz(),
-			p.posx()+p.poslx(), 1.0f,  p.posz()+p.poslz(),
-			0.0f, 1.0f,  0.0f);
+	gluLookAt(	p.posx()		  , 1.0f, p.posz(),
+				p.posx()+p.poslx(), 1.0f, p.posz()+p.poslz(),
+				0.0f			  ,	1.0f, 0.0f);
 	
 	glColor3f(0.0f, 0.9f, 0.0f);
-	glBegin(GL_QUADS);
-		glVertex3f(-100.0f, 0.0f, -100.0f);
-		glVertex3f(-100.0f, 0.0f,  100.0f);
-		glVertex3f( 100.0f, 0.0f,  100.0f);
-		glVertex3f( 100.0f, 0.0f, -100.0f);
-	glEnd();
+
 
 	renderWalls();
-	
+	renderFloors();
+
 	// Draw 36 SnowMen
 	for(int i = -3; i < 3; i++){
 		for(int j=-3; j < 3; j++) {
@@ -223,8 +237,11 @@ int main(int argc, char **argv) {
 
 	glGenTextures(QUANT_TEX, id_textures);
 	glBindTexture(GL_TEXTURE_2D, id_textures[0]);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, TEXTURE_WIDTH, TEXTURE_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, texture_data);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, TEXTURE_WIDTH, TEXTURE_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, wallGrime);
 
+/* 	glBindTexture(GL_TEXTURE_2D, id_textures[1]);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, TEXTURE_WIDTH, TEXTURE_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, grass);
+ */
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
