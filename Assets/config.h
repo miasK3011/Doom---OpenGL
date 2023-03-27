@@ -24,7 +24,7 @@
 #define VEL_MOV 0.5
 #define SENSE_CAM 0.08
 #define TAM_MAP 10
-#define QUANT_TEX 2
+#define QUANT_TEX 8
 
 #define PLAYER_X 9.74f
 #define PLAYER_Z 24.65f
