@@ -32,6 +32,11 @@ Player p(PLAYER_X, PLAYER_Z, PLAYER_LX, PLAYER_LZ, PLAYER_ANGLE);
 std::forward_list<Wall> walls;
 std::forward_list<Floor> floors;
 
+int count_rate = -1;
+int frames_playing = 0;
+int fps = 0;
+int lock_fps = FPS/2;
+
 //Matriz de id das texturas
 unsigned int id_textures[QUANT_TEX];
 
@@ -47,6 +52,34 @@ void renderWalls(void);
 void renderFloors(void);
 bool checkCollision();
 void textureFilters();
+void framerate();
+void timer(int value);
+
+void timer(int value){
+	glutTimerFunc(1000/lock_fps, timer, 0);
+	glutPostRedisplay();
+}
+
+void framerate(){
+	static GLuint frames = 0;
+	static GLuint clock;
+	static GLuint next_clock = 0;
+
+	count_rate++;
+	frames_playing++;
+	frames++;
+
+	clock = glutGet(GLUT_ELAPSED_TIME);
+
+	if (clock < next_clock) {
+		return;
+	}
+	fps = frames;
+	if (next_clock != 0) {
+		frames = 0;
+		next_clock = clock + 1000;
+	}
+}
 
 void textureFilters(){
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -147,6 +180,7 @@ void drawSnowMan() {
 }
 
 void display(void) {
+	framerate();
 
 	// Clear Color and Depth Buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -235,6 +269,7 @@ int main(int argc, char **argv) {
 	glutIdleFunc(display);
 	glutKeyboardFunc(keyboardNormalKeys);
 	glutSpecialFunc(keyboardSpecialKeys);
+	glutTimerFunc(1000/lock_fps, timer, 0);
 
 	glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, light_Ka);
