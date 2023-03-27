@@ -15,11 +15,12 @@
 
 class Floor {
     public:
-        Floor(float x, float y, float z, float tam);
+        Floor(float x, float y, float z, float tam, GLint texture);
         void render();
         void normalize(GLfloat (*vertices)[3], int num_vertices);
     private:
         float m_x, m_y, m_z, m_tam;
+        GLint m_tex;
 };
 
 #endif
