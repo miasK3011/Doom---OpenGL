@@ -31,6 +31,7 @@ void Wall::render(void) {
     // define as texturas para cada face do cubo
 	glBindTexture(GL_TEXTURE_2D, m_texture);
     glBegin(GL_QUADS);
+    glNormal3f(0.0f, 1.0f, 0.0f);
     glTexCoord2f(0.0, 0.0); glVertex3f(-hs, -hs,  hs);
     glTexCoord2f(1.0, 0.0); glVertex3f( hs, -hs,  hs);
     glTexCoord2f(1.0, 1.0); glVertex3f( hs,  hs,  hs);
@@ -39,6 +40,7 @@ void Wall::render(void) {
 
 	glBindTexture(GL_TEXTURE_2D, m_texture);
     glBegin(GL_QUADS);
+    glNormal3f(0, 1, 0);
     glTexCoord2f(0.0, 0.0); glVertex3f( hs, -hs, -hs);
     glTexCoord2f(1.0, 0.0); glVertex3f(-hs, -hs, -hs);
     glTexCoord2f(1.0, 1.0); glVertex3f(-hs,  hs, -hs);
@@ -47,6 +49,7 @@ void Wall::render(void) {
 
 	glBindTexture(GL_TEXTURE_2D, m_texture);
 	glBegin(GL_QUADS);
+    glNormal3f(0, 1, 0);
 	glTexCoord2f(0.0, 0.0); glVertex3f(-hs, -hs, -hs);
 	glTexCoord2f(1.0, 0.0); glVertex3f(-hs, -hs,  hs);
 	glTexCoord2f(1.0, 1.0); glVertex3f(-hs,  hs,  hs);
@@ -55,6 +58,7 @@ void Wall::render(void) {
 
 	glBindTexture(GL_TEXTURE_2D, m_texture);
 	glBegin(GL_QUADS);
+    glNormal3f(0, 1, 0);
 	glTexCoord2f(0.0, 0.0); glVertex3f( hs, -hs,  hs);
 	glTexCoord2f(1.0, 0.0); glVertex3f( hs, -hs, -hs);
 	glTexCoord2f(1.0, 1.0); glVertex3f( hs,  hs, -hs);
@@ -64,6 +68,7 @@ void Wall::render(void) {
 
 	glBindTexture(GL_TEXTURE_2D, m_texture);
     glBegin(GL_QUADS);
+    glNormal3f(0, 1, 0);
     glTexCoord2f(0.0, 0.0); glVertex3f(-hs,  hs, -hs);
     glTexCoord2f(1.0, 0.0); glVertex3f(-hs,  hs,  hs);
     glTexCoord2f(1.0, 1.0); glVertex3f( hs,  hs,  hs);
@@ -72,6 +77,7 @@ void Wall::render(void) {
 
 	glBindTexture(GL_TEXTURE_2D, m_texture);
 	glBegin(GL_QUADS);
+    glNormal3f(0, 1, 0);
     glTexCoord2f(0.0, 0.0); glVertex3f(-hs,  hs, -hs);
     glTexCoord2f(1.0, 0.0); glVertex3f(-hs,  hs,  hs);
     glTexCoord2f(1.0, 1.0); glVertex3f( hs,  hs,  hs);
