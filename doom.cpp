@@ -20,11 +20,14 @@
 #include "Assets/config.h"
 #include "Assets/player.h"
 #include "Assets/glut_text.h"
-#include "Assets/Texturas/wallGrime.h"
-#include "Assets/Texturas/grass.h"
+#include "Assets/Texturas/scenario/wallGrime.h"
+#include "Assets/Texturas/scenario/grass.h"
+#include "Assets/Texturas/skybox/tex_skybox.h"
+#include "Assets/skybox.h"
 
 //Declaração do objeto jogador
 Player p(PLAYER_X, PLAYER_Z, PLAYER_LX, PLAYER_LZ, PLAYER_ANGLE);
+
 //Lista de paredes
 std::forward_list<Wall> walls;
 std::forward_list<Floor> floors;
@@ -35,18 +38,27 @@ unsigned int id_textures[QUANT_TEX];
 //Prototipagem das funções
 void drawSnowMan();
 int main(int argc, char **argv);
-void processSpecialKeys(int key, int xx, int yy);
-void renderScene(void);
+void changeSize(int w, int h);
+void display(void);
+void keyboardSpecialKeys(int key, int xx, int yy);
+void keyboardNormalKeys(unsigned char key, int x, int y);
+void drawMap();
 void renderWalls(void);
 void renderFloors(void);
-void processNormalKeys(unsigned char key, int x, int y);
-void changeSize(int w, int h);
-void drawScene();
-void drawFloor(float x, float y, float z, float tam);
 bool checkCollision();
+void textureFilters();
+
+void textureFilters(){
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+}
 
 //Utiliza a matriz map para desenhar o mapa.
-void drawScene(){
+void drawMap(){
 	float size = 6;
 	float width = size, depth = size;
 
@@ -56,7 +68,7 @@ void drawScene(){
 			int z = depth * column;
 
 			if (map[row][column] == 0){
-				Floor f(x, 0, z, size);
+				Floor f(x, 0, z, size, id_textures[1]);
 				floors.push_front(f);
 			}
 			if (map[row][column] == 1) {					
@@ -134,12 +146,13 @@ void drawSnowMan() {
 	glutSolidCone(0.08f,0.5f,10,2);
 }
 
-void renderScene(void) {
+void display(void) {
 
 	// Clear Color and Depth Buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glClearColor(0, 0, 0.5, 1);
-	glColor3f(0.0f, 0.0f, 0.0f);
+	
+	glColor3f(1.0f, 1.0f, 1.0f);
 
 	// Reset transformations
 	glLoadIdentity();
@@ -148,11 +161,9 @@ void renderScene(void) {
 				p.posx()+p.poslx(), 1.0f, p.posz()+p.poslz(),
 				0.0f			  ,	1.0f, 0.0f);
 	
-	glColor3f(0.0f, 0.9f, 0.0f);
-
-
 	renderWalls();
 	renderFloors();
+	skybox(0, 0, 200, id_textures);
 
 	// Draw 36 SnowMen
 	for(int i = -3; i < 3; i++){
@@ -164,10 +175,11 @@ void renderScene(void) {
 			glPopMatrix();
 		}
 	}
+	
 	glutSwapBuffers();
 }
 
-void processSpecialKeys(int key, int xx, int yy) {
+void keyboardSpecialKeys(int key, int xx, int yy) {
 	enum {up, down, left, right};
 	switch (key) {
 		case GLUT_KEY_LEFT:
@@ -192,7 +204,7 @@ void processSpecialKeys(int key, int xx, int yy) {
 	
 }
 
-void processNormalKeys(unsigned char key, int x, int y) {
+void keyboardNormalKeys(unsigned char key, int x, int y) {
 	if (key == 27)
 		exit(0);
 }
@@ -218,41 +230,58 @@ int main(int argc, char **argv) {
 	glutInitWindowSize(JANELA_X, JANELA_Y);
 	glutCreateWindow("Doom");
 
-	glutDisplayFunc(renderScene);
+	glutDisplayFunc(display);
 	glutReshapeFunc(changeSize);
-	glutIdleFunc(renderScene);
-	glutKeyboardFunc(processNormalKeys);
-	glutSpecialFunc(processSpecialKeys);
+	glutIdleFunc(display);
+	glutKeyboardFunc(keyboardNormalKeys);
+	glutSpecialFunc(keyboardSpecialKeys);
 
 	glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, light_Ka);
    	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_Kd);
 	glLightfv(GL_LIGHT0, GL_SPECULAR, light_Ks);
 
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, material_Ka);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, material_Kd);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, material_Ks);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, material_Ke);
-    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, material_Se);
-
 	glGenTextures(QUANT_TEX, id_textures);
+	
 	glBindTexture(GL_TEXTURE_2D, id_textures[0]);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, TEXTURE_WIDTH, TEXTURE_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, wallGrime);
+	textureFilters();
 
-/* 	glBindTexture(GL_TEXTURE_2D, id_textures[1]);
+	glBindTexture(GL_TEXTURE_2D, id_textures[1]);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, TEXTURE_WIDTH, TEXTURE_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, grass);
- */
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	textureFilters();
+	
+	glBindTexture(GL_TEXTURE_2D, id_textures[2]);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, BOX_WIDTH, BOX_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, boxTop);
+	textureFilters();
 
-	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+	glBindTexture(GL_TEXTURE_2D, id_textures[3]);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, BOX_WIDTH, BOX_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, boxBottom);
+	textureFilters();
+
+	glBindTexture(GL_TEXTURE_2D, id_textures[4]);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, BOX_WIDTH, BOX_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, boxFront);
+	textureFilters();
+
+	glBindTexture(GL_TEXTURE_2D, id_textures[5]);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, BOX_WIDTH, BOX_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, boxBack);
+	textureFilters();
+
+	glBindTexture(GL_TEXTURE_2D, id_textures[6]);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, BOX_WIDTH, BOX_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, boxRight);
+	textureFilters();
+
+	glBindTexture(GL_TEXTURE_2D, id_textures[7]);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, BOX_WIDTH, BOX_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, boxLeft);
+	textureFilters();
+
+
 	
 	glEnable(GL_TEXTURE_2D);
+
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
+	glEnable(GL_LIGHTING);
 	glEnable(GL_COLOR_MATERIAL);
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
@@ -262,7 +291,7 @@ int main(int argc, char **argv) {
     glDepthFunc(GL_LESS);
 	
 
-	drawScene();
+	drawMap();
 	glutMainLoop();
 
 	return EXIT_SUCCESS;
