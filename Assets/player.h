@@ -11,6 +11,7 @@ class Player{
         void printPos();
         float posx();
         float posz();
+        float posy();
         float poslx();
         float poslz();
         void setx(float x);

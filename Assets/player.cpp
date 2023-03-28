@@ -52,6 +52,10 @@ float Player::posz(){
     return m_z;
 }
 
+float Player::posy(){
+    return 0;
+}
+
 float Player::poslx(){
     return m_lx;
 }

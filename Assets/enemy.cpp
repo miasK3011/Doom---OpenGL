@@ -41,6 +41,19 @@ float Enemy::getPosz(){
 	return posz;
 }
 
+float Enemy::getPosy(){
+	return 0;
+}
+
+void Enemy::setPosx(float x){
+	posx = x;
+}
+
+
+void Enemy::setPosz(float z){
+	posz = z;
+}
+
 float Enemy::getRadius(){
 	return radius;
 }

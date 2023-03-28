@@ -1,3 +1,4 @@
+#include <math.h>
 #ifdef __APPLE__
 #define GL_SILENCE_DEPRECATION
 #include <GLUT/glut.h>
@@ -108,6 +109,33 @@ void drawMap(){
 	}
 }
 
+bool checkHit(){
+	float player_radius = 2.0f;
+	float min_distance = 0.1f;
+
+	for (std::forward_list<Enemy>::iterator it = enemys.begin(); it != enemys.end(); it++) {
+		float enemy_radius = it->getRadius()+1;
+		float dist = sqrt(pow(p.posx() - it->getPosx(), 2) + pow(p.posz() - it->getPosz(), 2));
+
+		float projection = ((it->getPosx() - p.posx()) * p.poslx()) + ((it->getPosz() - p.posz()) * p.poslz());
+		float directionLength = sqrt(p.poslx() * p.poslx() + p.poslz() * p.poslz());
+		float normalDirX = p.poslx() / directionLength;
+		float normalDirZ = p.poslz() / directionLength;
+
+		float rayX = p.posx() + projection * normalDirX;
+		float rayY = p.posy();
+		float rayZ = p.posz() + projection * normalDirZ;
+
+		float distance = sqrt((rayX - it->getPosx()) * (rayX - it->getPosx()) + (rayY - it->getPosy()) * (rayY - it->getPosy()) + (rayZ - it->getPosz()) * (rayZ - it->getPosz()));
+
+		if (distance < enemy_radius) {
+			it->setPosx(-100);
+			return true;
+		}
+	}
+	return false;
+}
+
 //Checa colisão com inimigos e evita que o jogador fique preso dentro da parede.
 bool checkCollision(){
 	float player_radius = 2.0f;
@@ -137,14 +165,8 @@ bool checkCollision(){
 	}
 
 	for (std::forward_list<Enemy>::iterator it = enemys.begin(); it != enemys.end(); it++) {
-		float enemy_radius = it->getRadius();
+		float enemy_radius = it->getRadius()+1;
 		float dist = sqrt(pow(p.posx() - it->getPosx(), 2) + pow(p.posz() - it->getPosz(), 2));
-		
-		float projection = ((it->getPosx() - p.posx()) * p.poslx()) + ((it->getPosz() - p.posx()) * p.poslz());
-		float dire
-
-
-
 		if (dist <= player_radius + enemy_radius - min_distance) {
 			float dx = p.posx() - it->getPosx();
 			float dz = p.posz() - it->getPosz();
@@ -221,8 +243,9 @@ void keyboardNormalKeys(unsigned char key, int x, int y) {
 		exit(0);
 	}
 	if (key == ' ') {
-		p.shoot();
-		printf("Atirou\n%d, %d\n", j_height, j_width);
+		if(checkHit()){
+			printf("Acertou\n");
+		}
 	} 
 }
 

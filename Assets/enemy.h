@@ -21,8 +21,9 @@ class Enemy {
         void randMov();
         float getPosx();
         float getPosz();
-        float setPosx(float x);
-        float setPosz(float z);
+        float getPosy();
+        void setPosx(float x);
+        void setPosz(float z);
         float getRadius();
     private:
         int posx, posz, radius = 0.75f;
