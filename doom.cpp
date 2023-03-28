@@ -1,3 +1,4 @@
+#include <type_traits>
 #ifdef __APPLE__
 #define GL_SILENCE_DEPRECATION
 #include <GLUT/glut.h>
@@ -19,6 +20,7 @@
 #include "Assets/floor.h"
 #include "Assets/config.h"
 #include "Assets/player.h"
+#include "Assets/enemy.h"
 #include "Assets/glut_text.h"
 #include "Assets/Texturas/scenario/wallGrime.h"
 #include "Assets/Texturas/scenario/grass.h"
@@ -28,9 +30,11 @@
 //Declaração do objeto jogador
 Player p(PLAYER_X, PLAYER_Z, PLAYER_LX, PLAYER_LZ, PLAYER_ANGLE);
 
-//Lista de paredes
+
+//Lista de Game Objects
 std::forward_list<Wall> walls;
 std::forward_list<Floor> floors;
+std::forward_list<Enemy> enemys;
 
 //Matriz de id das texturas
 unsigned int id_textures[QUANT_TEX];
@@ -47,6 +51,24 @@ void renderWalls(void);
 void renderFloors(void);
 bool checkCollision();
 void textureFilters();
+
+void renderWalls(){
+	for (std::forward_list<Wall>::iterator it = walls.begin(); it != walls.end(); it++) {
+		it->render();
+	}
+}
+
+void renderFloors(){
+	for (std::forward_list<Floor>::iterator it = floors.begin(); it != floors.end(); it++) {
+		it->render();
+	}
+}
+
+void renderEnemys(){
+	for (std::forward_list<Enemy>::iterator it = enemys.begin(); it != enemys.end(); it++) {
+		it->render();
+	}
+}
 
 void textureFilters(){
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -75,35 +97,29 @@ void drawMap(){
 				Wall w(x, z, size, id_textures[0]);
 				walls.push_front(w);
 			}
+			if(map[row][column] == 2){
+				Enemy e(x, z);
+				Floor f(x, 0, z, size, id_textures[1]);
+				floors.push_front(f);
+				enemys.push_front(e);
+			}
 
 		}
 	}
 }
 
-void renderWalls(){
-	for (std::forward_list<Wall>::iterator it = walls.begin(); it != walls.end(); it++) {
-		it->render();
-	}
-}
-
-void renderFloors(){
-	for (std::forward_list<Floor>::iterator it = floors.begin(); it != floors.end(); it++) {
-		it->render();
-	}
-}
-
-//Checa colisão e evita que o jogador fique preso dentro da parede.
+//Checa colisão com inimigos e evita que o jogador fique preso dentro da parede.
 bool checkCollision(){
 	float player_radius = 2.0f;
 	float min_distance = 0.1f; // valor mínimo de distância entre o jogador e a parede
 	
 	for (std::forward_list<Wall>::iterator it = walls.begin(); it != walls.end(); it++) {
 		float wall_radius = it->getSize() / 2.0f;
-		float dist = sqrt(pow(p.posx() - it->getX(), 2) + pow(p.posz() - it->getZ(), 2));
+		float dist = sqrt(pow(p.posx() - it->getPosx(), 2) + pow(p.posz() - it->getPosz(), 2));
 		
 		if (dist <= player_radius + wall_radius - min_distance) {
-			float dx = p.posx() - it->getX();
-			float dz = p.posz() - it->getZ();
+			float dx = p.posx() - it->getPosx();
+			float dz = p.posz() - it->getPosz();
 			float len = sqrt(dx * dx + dz * dz);
 			
 			dx /= len;
@@ -119,31 +135,31 @@ bool checkCollision(){
 			return true;
 		}
 	}
+
+	for (std::forward_list<Enemy>::iterator it = enemys.begin(); it != enemys.end(); it++) {
+		float enemy_radius = it->getRadius();
+		float dist = sqrt(pow(p.posx() - it->getPosx(), 2) + pow(p.posz() - it->getPosz(), 2));
+		
+		if (dist <= player_radius + enemy_radius - min_distance) {
+			float dx = p.posx() - it->getPosx();
+			float dz = p.posz() - it->getPosz();
+			float len = sqrt(dx * dx + dz * dz);
+			
+			dx /= len;
+			dz /= len;
+			
+			float separation = player_radius + enemy_radius - dist + min_distance;
+			
+			dx *= separation;
+			dz *= separation;
+
+			p.setx(p.posx() + dx);
+			p.setz(p.posz() + dz);
+			return true;
+		}
+	}
+
 	return false;
-}
-
-
-void drawSnowMan() {
-	glColor3f(1.0f, 1.0f, 1.0f);
-// Draw Body
-	glTranslatef(0.0f ,0.75f, 0.0f);
-	glutSolidSphere(0.75f,20,20);
-// Draw Head
-	glTranslatef(0.0f, 1.0f, 0.0f);
-	glutSolidSphere(0.25f,20,20);
-
-// Draw Eyes
-	glPushMatrix();
-	glColor3f(0.0f,0.0f,0.0f);
-	glTranslatef(0.05f, 0.10f, 0.18f);
-	glutSolidSphere(0.05f,10,10);
-	glTranslatef(-0.1f, 0.0f, 0.0f);
-	glutSolidSphere(0.05f,10,10);
-	glPopMatrix();
-
-// Draw Nose
-	glColor3f(1.0f, 0.5f , 0.5f);
-	glutSolidCone(0.08f,0.5f,10,2);
 }
 
 void display(void) {
@@ -163,19 +179,9 @@ void display(void) {
 	
 	renderWalls();
 	renderFloors();
+	renderEnemys();
 	skybox(0, 0, 200, id_textures);
 
-	// Draw 36 SnowMen
-	for(int i = -3; i < 3; i++){
-		for(int j=-3; j < 3; j++) {
-			glPushMatrix();
-			glTranslatef(i*10.0,0,j * 10.0);
-			drawSnowMan();
-			glDisable(GL_TEXTURE_2D);
-			glPopMatrix();
-		}
-	}
-	
 	glutSwapBuffers();
 }
 
@@ -275,8 +281,6 @@ int main(int argc, char **argv) {
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, BOX_WIDTH, BOX_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, boxLeft);
 	textureFilters();
 
-
-	
 	glEnable(GL_TEXTURE_2D);
 
 	glEnable(GL_DEPTH_TEST);
