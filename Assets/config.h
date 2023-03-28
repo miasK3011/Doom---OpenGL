@@ -3,6 +3,14 @@
     VEL_MOV = Velocidade de movimento do jogador
     SENSE_CAM = Sensibilidade da camera
     TAM_MAP = Tamanho do mapa
+
+    *************************************************************
+
+    Legenda do mapa:
+        0 - Chão (vazio)
+        1 - Parede
+        2 - Spawn de inimigos
+
 */
 
 #ifdef __APPLE__
@@ -37,26 +45,15 @@ static GLfloat light_Ka[] = {0.4, 0.4, 0.4, 0.0};
 static GLfloat light_Kd[] = {1.0, 1.0, 1.0, 0.0};
 static GLfloat light_Ks[] = {1.0, 1.0, 1.0, 0.0};
 
-static GLfloat material_Ka[] = {0.33, 0.22, 0.03, 1.00};
-static GLfloat material_Kd[] = {0.78, 0.57, 0.11, 1.00};
-static GLfloat material_Ks[] = {0.99, 0.94, 0.81, 1.00};
-static GLfloat material_Ke[] = {0.00, 0.00, 0.00, 0.00};
-static GLfloat material_Se = 28;
-
-static GLfloat floorNormals[4][3] = {{0,0,0},
-                                            {0,0,0},
-                                            {0,0,0},
-                                            {0,0,0}};
-
 static int map[TAM_MAP][TAM_MAP] = {{1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
                                     {1, 0, 0, 0, 0, 1, 0, 0, 0, 1}, 
-                                    {1, 0, 0, 0, 0, 1, 0, 0, 0, 1},
+                                    {1, 0, 2, 0, 0, 1, 0, 0, 0, 1},
                                     {1, 0, 0, 0, 0, 1, 0, 0, 0, 1},
                                     {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-                                    {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+                                    {1, 0, 0, 0, 0, 0, 0, 2, 0, 1},
                                     {1, 0, 0, 1, 0, 0, 0, 0, 0, 1},
                                     {1, 0, 0, 1, 0, 0, 0, 0, 0, 1},
-                                    {1, 0, 0, 1, 0, 0, 0, 0, 0, 1},
+                                    {1, 0, 0, 1, 0, 0, 0, 2, 0, 1},
                                     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
                                     };
 
