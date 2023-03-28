@@ -12,13 +12,13 @@
 #ifndef wall_h
 #define wall_h
 
-class Wall {
+class Wall  {
     public:
         Wall(float x, float z, float size, GLuint texture);
         void render(void);
         float getSize();
-        float getX();
-        float getZ();
+        float getPosx();
+        float getPosz();
     private:
         float m_x, m_z;
         float m_size;

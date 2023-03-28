@@ -1,15 +1,4 @@
 #include <cstdio>
-#ifdef __APPLE__
-#define GL_SILENCE_DEPRECATION
-#include <GLUT/glut.h>
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
-#else
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GL/glut.h>
-#endif
-
 #include "wall.h"
 
 Wall::Wall(float x, float z, float size, GLuint texture) {
@@ -93,10 +82,10 @@ float Wall::getSize(){
     return m_size;
 }
 
-float Wall::getX(){
+float Wall::getPosx(){
     return m_x;
 }
 
-float Wall::getZ(){
+float Wall::getPosz(){
     return m_z;
 }
