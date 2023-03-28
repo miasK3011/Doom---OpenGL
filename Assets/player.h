@@ -15,8 +15,12 @@ class Player{
         float poslz();
         void setx(float x);
         void setz(float z);
+        bool hasShooted();
+        void shoot();
+        void resetShoot();
     private:
-        float m_x, m_z, m_lx, m_lz, m_angle;
+        float m_x, m_z, m_y, m_lx, m_lz, m_angle;
+        bool shooting = false;
 };
 
 #endif

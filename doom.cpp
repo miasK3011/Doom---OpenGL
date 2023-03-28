@@ -1,4 +1,3 @@
-#include <type_traits>
 #ifdef __APPLE__
 #define GL_SILENCE_DEPRECATION
 #include <GLUT/glut.h>
@@ -16,6 +15,7 @@
 #include <stdio.h>
 #include <forward_list>
 
+
 #include "Assets/wall.h"
 #include "Assets/floor.h"
 #include "Assets/config.h"
@@ -29,6 +29,7 @@
 
 //Declaração do objeto jogador
 Player p(PLAYER_X, PLAYER_Z, PLAYER_LX, PLAYER_LZ, PLAYER_ANGLE);
+int j_width, j_height;
 
 
 //Lista de Game Objects
@@ -103,7 +104,6 @@ void drawMap(){
 				floors.push_front(f);
 				enemys.push_front(e);
 			}
-
 		}
 	}
 }
@@ -140,6 +140,11 @@ bool checkCollision(){
 		float enemy_radius = it->getRadius();
 		float dist = sqrt(pow(p.posx() - it->getPosx(), 2) + pow(p.posz() - it->getPosz(), 2));
 		
+		float projection = ((it->getPosx() - p.posx()) * p.poslx()) + ((it->getPosz() - p.posx()) * p.poslz());
+		float dire
+
+
+
 		if (dist <= player_radius + enemy_radius - min_distance) {
 			float dx = p.posx() - it->getPosx();
 			float dz = p.posz() - it->getPosz();
@@ -176,10 +181,11 @@ void display(void) {
 	gluLookAt(	p.posx()		  , 1.0f, p.posz(),
 				p.posx()+p.poslx(), 1.0f, p.posz()+p.poslz(),
 				0.0f			  ,	1.0f, 0.0f);
-	
+	// Manda renderizar o jogo
 	renderWalls();
 	renderFloors();
 	renderEnemys();
+
 	skybox(0, 0, 200, id_textures);
 
 	glutSwapBuffers();
@@ -211,8 +217,13 @@ void keyboardSpecialKeys(int key, int xx, int yy) {
 }
 
 void keyboardNormalKeys(unsigned char key, int x, int y) {
-	if (key == 27)
+	if (key == 27) {
 		exit(0);
+	}
+	if (key == ' ') {
+		p.shoot();
+		printf("Atirou\n%d, %d\n", j_height, j_width);
+	} 
 }
 
 void changeSize(int w, int h) {
@@ -220,6 +231,9 @@ void changeSize(int w, int h) {
 	if(h == 0)
 		h = 1;
 	float ratio = 1.0* w / h;
+
+	j_width = w;
+	j_height = h;
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -294,8 +308,9 @@ int main(int argc, char **argv) {
     glCullFace(GL_BACK);
     glDepthFunc(GL_LESS);
 	
-
+	//Cria os gameobjects e salva numa lista
 	drawMap();
+	
 	glutMainLoop();
 
 	return EXIT_SUCCESS;

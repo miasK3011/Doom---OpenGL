@@ -71,3 +71,11 @@ void Player::setz(float z){
 void Player::printPos(){
     printf("x = %2f, z = %2f\n", m_x, m_z);
 }
+
+void Player::shoot(){
+    shooting = true;
+};
+
+void Player::resetShoot(){
+    shooting = false;
+}
