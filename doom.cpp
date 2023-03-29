@@ -15,6 +15,9 @@
 #include <stdio.h>
 #include <forward_list>
 #include <math.h>
+#include <AL/al.h>
+#include <AL/alc.h>
+#include <AL/alext.h>
 
 using namespace std;
 
@@ -29,8 +32,44 @@ using namespace std;
 #include "Assets/Texturas/skybox/tex_skybox.h"
 #include "Assets/skybox.h"
 
+ALuint a_pistol;
+
+void load_audio(const char* filename, ALuint *source) {
+	ALCdevice* device = alcOpenDevice(nullptr);
+    ALCcontext* context = alcCreateContext(device, nullptr);
+    alcMakeContextCurrent(context);
+
+    // Load the audio file
+    ALuint buffer;
+    alGenBuffers(1, &buffer);
+    FILE* file = fopen(filename, "rb");
+    if (file) {
+        // Get the file size
+        fseek(file, 0, SEEK_END);
+        long size = ftell(file);
+        fseek(file, 0, SEEK_SET);
+        
+        // Allocate a buffer for the file data
+        char* data = new char[size];
+        fread(data, 1, size, file);
+        fclose(file);
+
+        // Load the file data into the buffer
+        alBufferData(buffer, AL_FORMAT_MONO16, data, size, 44100);
+        delete[] data;
+    }else{
+		printf("Erro\n");
+	}
+
+    // Create a source for the audio
+
+    
+    alGenSources(1, source);
+    alSourcei(*source, AL_BUFFER, buffer);
+}
 //Declaração do objeto jogador
 Player p(PLAYER_X, PLAYER_Z, PLAYER_LX, PLAYER_LZ, PLAYER_ANGLE);
+
 int j_width, j_height;
 
 
@@ -303,6 +342,7 @@ void keyboardNormalKeys(unsigned char key, int x, int y) {
 		exit(0);
 	}
 	if (key == ' ') {
+		alSourcePlay(a_pistol);
 		if(checkHit()){
 			printf("Acerto!!\n");
 		}
@@ -326,7 +366,7 @@ void changeSize(int w, int h) {
 }
 
 int main(int argc, char **argv) {
-
+	printf("%s\n", argv[0]);
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
 	glutInitWindowPosition((1336-JANELA_X)/2,(736-JANELA_Y)/2);
@@ -338,6 +378,8 @@ int main(int argc, char **argv) {
 	glutIdleFunc(display);
 	glutKeyboardFunc(keyboardNormalKeys);
 	glutSpecialFunc(keyboardSpecialKeys);
+
+	load_audio("/home/mias/Documentos/Github/Doom---OpenGL/Assets/SFX/pistol.wav", &a_pistol);
 
 	glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, light_Ka);
