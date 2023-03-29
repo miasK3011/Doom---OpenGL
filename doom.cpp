@@ -1,4 +1,3 @@
-#include <math.h>
 #ifdef __APPLE__
 #define GL_SILENCE_DEPRECATION
 #include <GLUT/glut.h>
@@ -15,7 +14,9 @@
 #include <cstdlib>
 #include <stdio.h>
 #include <forward_list>
+#include <math.h>
 
+using namespace std;
 
 #include "Assets/wall.h"
 #include "Assets/floor.h"
@@ -53,6 +54,46 @@ void renderWalls(void);
 void renderFloors(void);
 bool checkCollision();
 void textureFilters();
+void resetEnemys();
+
+void drawHUD() {
+	glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0, j_width, 0, j_height, -1, 1); // define as dimensões da tela
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+    // Define a cor do crosshair como vermelho
+    glColor3f(0.0f, 1.0f, 0.0f);
+    
+    // Define a largura da linha do crosshair
+    glLineWidth(2.0f);
+    
+    // Desenha uma linha vertical
+	glPushMatrix();
+	glTranslatef(j_width/2, j_height/2, 0);
+    glBegin(GL_LINES);
+    glVertex2f(0.0f, -10.0f);
+    glVertex2f(0.0f, 10.0f);
+    glEnd();
+    
+    // Desenha uma linha horizontal
+    glBegin(GL_LINES);
+    glVertex2f(-10.0f, 0.0f);
+    glVertex2f(10.0f, 0.0f);
+    glEnd();
+	glPopMatrix();
+	float ratio = 1.0* j_width / j_height;
+
+	draw_text_stroke(0, 5, "Kills: " + to_string(kills), 0.3);
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glViewport(0, 0, j_width, j_height);
+	gluPerspective(45,ratio,1,1000);
+	glMatrixMode(GL_MODELVIEW);
+}
 
 void renderWalls(){
 	for (std::forward_list<Wall>::iterator it = walls.begin(); it != walls.end(); it++) {
@@ -101,6 +142,7 @@ void drawMap(){
 			}
 			if(map[row][column] == 2){
 				Enemy e(x, z);
+				qntEnemy++;
 				Floor f(x, 0, z, size, id_textures[1]);
 				floors.push_front(f);
 				enemys.push_front(e);
@@ -109,13 +151,16 @@ void drawMap(){
 	}
 }
 
-bool checkHit(){
-	float player_radius = 2.0f;
-	float min_distance = 0.1f;
+void resetEnemys(){
+	for (std::forward_list<Enemy>::iterator it = enemys.begin(); it != enemys.end(); it++) {
+		it->reset();
+	}
+	killCount = 0;
+}
 
+bool checkHit(){
 	for (std::forward_list<Enemy>::iterator it = enemys.begin(); it != enemys.end(); it++) {
 		float enemy_radius = it->getRadius()+1;
-		float dist = sqrt(pow(p.posx() - it->getPosx(), 2) + pow(p.posz() - it->getPosz(), 2));
 
 		float projection = ((it->getPosx() - p.posx()) * p.poslx()) + ((it->getPosz() - p.posz()) * p.poslz());
 		float directionLength = sqrt(p.poslx() * p.poslx() + p.poslz() * p.poslz());
@@ -129,7 +174,16 @@ bool checkHit(){
 		float distance = sqrt((rayX - it->getPosx()) * (rayX - it->getPosx()) + (rayY - it->getPosy()) * (rayY - it->getPosy()) + (rayZ - it->getPosz()) * (rayZ - it->getPosz()));
 
 		if (distance < enemy_radius) {
-			it->setPosx(-100);
+			
+			it->countHit();
+			
+			if (it->isDead()) {
+				killCount++;
+				kills++;
+				it->setPosx(-100);
+				printf("Inimigo eliminado\n");	
+			}
+
 			return true;
 		}
 	}
@@ -165,7 +219,7 @@ bool checkCollision(){
 	}
 
 	for (std::forward_list<Enemy>::iterator it = enemys.begin(); it != enemys.end(); it++) {
-		float enemy_radius = it->getRadius()+1;
+		float enemy_radius = it->getRadius();
 		float dist = sqrt(pow(p.posx() - it->getPosx(), 2) + pow(p.posz() - it->getPosz(), 2));
 		if (dist <= player_radius + enemy_radius - min_distance) {
 			float dx = p.posx() - it->getPosx();
@@ -207,6 +261,12 @@ void display(void) {
 	renderWalls();
 	renderFloors();
 	renderEnemys();
+	drawHUD();
+	p.modelView();
+
+	if (killCount == qntEnemy) {
+		resetEnemys();
+	}
 
 	skybox(0, 0, 200, id_textures);
 
@@ -244,7 +304,7 @@ void keyboardNormalKeys(unsigned char key, int x, int y) {
 	}
 	if (key == ' ') {
 		if(checkHit()){
-			printf("Acertou\n");
+			printf("Acerto!!\n");
 		}
 	} 
 }
@@ -330,7 +390,7 @@ int main(int argc, char **argv) {
 	glShadeModel(GL_SMOOTH);
     glCullFace(GL_BACK);
     glDepthFunc(GL_LESS);
-	
+
 	//Cria os gameobjects e salva numa lista
 	drawMap();
 	
