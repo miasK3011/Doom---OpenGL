@@ -30,12 +30,12 @@
 #define JANELA_X 640
 #define JANELA_Y 480
 #define VEL_MOV 0.5
-#define SENSE_CAM 0.08
+#define SENSE_CAM 0.05
 #define TAM_MAP 10
 #define QUANT_TEX 8
 
-#define PLAYER_X 9.74f
-#define PLAYER_Z 24.65f
+#define PLAYER_X 20.00f
+#define PLAYER_Z 49.30f
 #define PLAYER_LX 0.0f
 #define PLAYER_LZ -1.0f
 #define PLAYER_ANGLE 0.0f
@@ -57,5 +57,6 @@ static int map[TAM_MAP][TAM_MAP] = {{1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
                                     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
                                     };
 
+static int qntEnemy = 0, killCount = 0, kills=0;
 
 #endif
