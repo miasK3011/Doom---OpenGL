@@ -44,6 +44,13 @@ void Player::movement(int direction){
     }
 }
 
+void Player::modelView(){
+    glPushMatrix();
+    glTranslatef(m_x, m_y, m_z+1);
+    glutSolidCube(0.1f);
+    glPopMatrix();
+}
+
 float Player::posx(){
     return m_x;
 }
@@ -74,12 +81,4 @@ void Player::setz(float z){
 
 void Player::printPos(){
     printf("x = %2f, z = %2f\n", m_x, m_z);
-}
-
-void Player::shoot(){
-    shooting = true;
-};
-
-void Player::resetShoot(){
-    shooting = false;
 }

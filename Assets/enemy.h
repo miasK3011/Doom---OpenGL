@@ -25,8 +25,14 @@ class Enemy {
         void setPosx(float x);
         void setPosz(float z);
         float getRadius();
+        void countHit();
+        bool isDead();
+        void reset();
+
     private:
-        int posx, posz, radius = 0.75f;
+        float posx, posz, hit, resetx, resetz;
+        float radius;
+        bool dead;
 };
 
 #endif
